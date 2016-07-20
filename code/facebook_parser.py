@@ -23,7 +23,6 @@ class FacebookParser(object):
 
         conv_lists = [self.parse_convo(convo) for convo in convos]
         conv_dict = self.reduce_convos_by_authors(conv_lists)
-
         self.save_all_convos_to_files(conv_dict)
 
     def parse_convo(self, convo):
@@ -45,13 +44,14 @@ class FacebookParser(object):
 
     def save_all_convos_to_files(self, conv_dict):
         for filename, convo in conv_dict.iteritems():
-            if len(convo) > self.lower_size_limit:
+            if len(convo) > self.lower_size_limit and len(filename) > 0:
                 filename = self.reduce_filename_to_initials(filename)
                 filepath = self.outpath + filename + '.json'
                 filepath = self.increment_filename_if_exists(filepath)
                 self.save_convo_to_file(convo, filepath)
 
     def reduce_filename_to_initials(self, filename):
+        print filename
         initials = '-'.join([self.get_initials(author)
                             for author in filename.split("-")])
         if len(initials) > self.max_filename_len - 7:
@@ -72,7 +72,7 @@ class FacebookParser(object):
     @staticmethod
     def save_convo_to_file(parsed_convo, filepath):
         with open(filepath, 'w') as outfile:
-            json.dump(parsed_convo, outfile,  indent=4)
+            json.dump(parsed_convo, outfile, indent=4)
 
     @staticmethod
     def get_initials(author):
