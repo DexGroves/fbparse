@@ -27,9 +27,15 @@ class FacebookParser(object):
 
     def parse_convo(self, convo):
         parsed_convo = zip(self.xmlp.get_msg_author(convo),
+                           self.xmlp.get_msg_time(convo),
                            self.xmlp.get_msg_txt(convo))
-        return [(self.xmlp.delist(msg), self.xmlp.delist(txt))
-                for [msg, txt] in parsed_convo]
+
+        delisted_convo = [(self.xmlp.delist(msg),
+                           self.xmlp.delist(time),
+                           self.xmlp.delist(txt))
+                          for [msg, time, txt] in parsed_convo]
+
+        return delisted_convo
 
     def reduce_convos_by_authors(self, conv_lists):
         convo_dict = {}
@@ -80,7 +86,7 @@ class FacebookParser(object):
 
     @staticmethod
     def get_convo_authors(convo):
-        authors = [author for (author, msg) in convo if "@" not in author]
+        authors = [auth for (auth, time, msg) in convo if "@" not in auth]
         authors = set(authors)
         return '-'.join(sorted(authors))
 
@@ -120,6 +126,12 @@ class XmlParser(object):
     def get_msg_txt(convo):
         ps = convo.xpath('p')
         return [p.xpath('text()') for p in ps]
+
+    @staticmethod
+    def get_msg_time(convo):
+        msgs = convo.xpath('div[@class="message"]' +
+                           '/div[@class="message_header"]')
+        return [msg.xpath('span[@class="meta"]/text()') for msg in msgs]
 
     @staticmethod
     def delist(xml_entry):
